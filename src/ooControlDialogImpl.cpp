@@ -512,8 +512,16 @@ void ooControlDialogImpl::OnButtonClickDeleteObservation( wxCommandEvent& event 
 {
     if (!m_Observations) return;
 
-    if (m_Observations->GetNumberRows() > 0)
-        m_Observations->DeleteRows(0);
+    
+    if (m_Observations->GetNumberRows() <= 0) return;
+
+    const int response = wxMessageBox(
+        "Warning: your last observation will be deleted. Do you want to "
+        "continue?",
+        "Delete last observation?", wxYES_NO, this);
+    if (response != wxYES) return;
+
+    m_Observations->DeleteRows(0);
 }
 
 void ooControlDialogImpl::OnButtonClickDeleteAllObservations(wxCommandEvent& event)
