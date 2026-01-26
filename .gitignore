@@ -1,9 +1,14 @@
 build/
 .DS_Store
+.vs
 
 cmake-build*
+CMakeSettings.json
 .directory
 po/POTFILES.in.test
 temp
 tmp
+cache
 master.zip
+Forms/*.cpp
+Forms/*.h
