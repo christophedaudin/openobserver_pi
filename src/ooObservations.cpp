@@ -31,6 +31,8 @@
 
 #include "ocpn_plugin.h"
 
+std::unordered_map<wxString, wxArrayString> ooObservations::m_listings;
+
 ooObservations::ooObservations() : wxGridStringTable(0, 0), m_IsObserving(false)
 {
 }
@@ -49,7 +51,7 @@ void ooObservations::SetColSizes(const wxGridSizesInfo &sizeInfo)
     m_col_sizes = sizeInfo;
 }
 
-wxArrayString ooObservations::GetColFieldTypes() const
+const wxArrayString& ooObservations::GetColFieldTypes() const
 {
     return m_col_field_types;
 }
@@ -338,6 +340,30 @@ void ooObservations::SaveToXML(wxFile *file)
     file->Write(stream.GetString());    
 }
 
+bool ooObservations::ReadListingFromXML(const wxString& filename, wxArrayString* result) {
+  wxXmlDocument xmlDoc;
+  if (result == NULL) return false;
+  if (filename.IsEmpty() || (!xmlDoc.Load(filename)) ||
+      (xmlDoc.GetRoot()->GetName() != "listing") ||
+      (xmlDoc.GetRoot()->GetAttribute("file_version") != "1")) {
+    return false;
+  }
+
+  wxXmlNode* item = xmlDoc.GetRoot()->GetChildren();
+  while (item) {
+    int r = -1;
+    wxString label = item->GetAttribute("label");
+    if (label.length() > 0) {
+      result->Add(label);
+    }
+
+    item = item->GetNext();
+  }
+
+  return true;
+}
+
+
 bool ooObservations::ReadFromXML(wxString& filename)
 {
     wxXmlDocument xmlDoc;
@@ -392,5 +418,25 @@ wxArrayString ooObservations::GetObservationFieldTypes()
     observationFieldTypes.Add("Observation Duration");
     observationFieldTypes.Add("Mark GUID");
     observationFieldTypes.Add("Text");
+    
+    for (auto it : m_listings)
+    {
+      observationFieldTypes.Add(it.first);
+    }
+
     return observationFieldTypes;
+}
+
+void ooObservations::AddListing(const wxString& listing, const wxArrayString& items)
+{
+    m_listings[listing] = items;
+}
+
+bool ooObservations::GetListing(const wxString& listing, wxArrayString* items)
+{
+    if (m_listings.find(listing) == m_listings.end()) return false;
+    if (items == NULL) return false;
+
+    *items = m_listings.at(listing);
+    return true;
 }

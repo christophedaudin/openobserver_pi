@@ -65,7 +65,14 @@ ooControlDialogImpl::ooControlDialogImpl(wxWindow* parent)
     m_MiniPanel->SetToggleWindowButtonLabel("Minimize");
     this->Connect(wxEVT_SHOW, wxShowEventHandler(ooMiniPanel::OnShow), NULL, m_MiniPanel);
     
-    std::function<void(wxCommandEvent&)> refreshHandler = [&](wxCommandEvent& event) { m_ObservationsTable->Refresh(); event.Skip(); };
+    std::function<void(wxCommandEvent&)> refreshHandler = [&](wxCommandEvent& event)
+        {
+            m_ObservationsTable->Refresh();
+            event.Skip();
+            if (event.GetEventType() == OBSERVATION_STARTED) {
+                SetupObservationTable(1);
+            }
+        };
     m_MiniPanel->Bind(OBSERVATION_STARTED, refreshHandler);
     m_MiniPanel->Bind(OBSERVATION_STOPPED, refreshHandler);
 
@@ -281,6 +288,26 @@ void ooControlDialogImpl::CreateObservationsTable(ooObservations *observations)
 	m_fgSizerObservations->Add(m_ObservationsTable, 0, wxALL|wxEXPAND, 5);    
 }
 
+void ooControlDialogImpl::SetupObservationTable(int row_count)
+{
+  if (row_count == -1) row_count = m_Observations->GetRowsCount();
+
+  // Setup listings editors
+  const int C = m_gridProject->GetNumberCols();
+
+  for (int c = 0; c < C; ++c) {
+    const wxString field_type = m_Observations->GetColFieldTypes()[c];
+    wxArrayString items;
+    if (ooObservations::GetListing(field_type, &items)) {
+      for (int r = 0; r < row_count; ++r) {
+        wxGridCellChoiceEditor* observationFieldTypeEditor =
+            new wxGridCellChoiceEditor(items, true);
+        m_ObservationsTable->SetCellEditor(r, c, observationFieldTypeEditor);
+      }
+    }
+  }
+}
+
 void ooControlDialogImpl::RestoreBackupObservations()
 {
     if (!m_Observations) return;
@@ -290,6 +317,8 @@ void ooControlDialogImpl::RestoreBackupObservations()
     {
         wxMessageBox("Error loading observations file " + m_BackupFilename + ".", "Error", wxOK, this);
     }
+
+    SetupObservationTable();
 
     // start timer to backup observations every 30 seconds
     m_BackupTimer.Start(30000); // 30'000 ms = 30 s
@@ -506,6 +535,8 @@ void ooControlDialogImpl::OnButtonClickNewObservation( wxCommandEvent& event )
     if (!m_Observations) return;
 
     m_Observations->InsertRows(0, 1);
+
+    SetupObservationTable(1);
 }
 
 void ooControlDialogImpl::OnButtonClickDeleteObservation( wxCommandEvent& event )

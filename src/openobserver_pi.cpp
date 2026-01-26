@@ -77,6 +77,7 @@ wxString                *g_PrivateDataDir;
 wxString                *g_pData;
 wxString                *g_SData_Locn;
 wxString                *g_pLayerDir;
+wxString                *g_pListingDir;
 
 wxString                *g_tplocale;
 void                    *g_ppimgr;
@@ -159,6 +160,23 @@ openobserver_pi::openobserver_pi(void *ppimgr)
     if (!wxDir::Exists(*g_pLayerDir))
         wxMkdir(*g_pLayerDir);
 
+    g_pListingDir = new wxString(*g_PrivateDataDir);
+    g_pListingDir->Append(wxT("Listings"));
+    appendOSDirSlash(g_pListingDir);
+    if (!wxDir::Exists(*g_pListingDir))
+        wxMkdir(*g_pListingDir);
+
+    wxArrayString allListings;
+    wxDir::GetAllFiles(*g_pListingDir, &allListings);
+    for (auto f : allListings)
+    {
+        wxArrayString items;
+        if (ooObservations::ReadListingFromXML(f, &items))
+        {
+            wxString filename = f.AfterLast('/').AfterLast('\\').BeforeLast('.');
+            ooObservations::AddListing(filename, items);
+        }
+    }
     m_ptpicons = new tpicons();
 
     delete l_pDir;
@@ -177,6 +195,9 @@ openobserver_pi::~openobserver_pi()
 
     delete g_pLayerDir;
     g_pLayerDir = NULL;
+
+    delete g_pListingDir;
+    g_pListingDir = NULL;
 }
 
 int openobserver_pi::Init(void)

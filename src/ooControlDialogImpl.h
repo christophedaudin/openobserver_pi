@@ -59,6 +59,7 @@ public:
 
 protected:
         void SetupObservationsForProject();
+        void SetupObservationTable(int row_count = -1);
 
         void OnButtonClickProjectEditUse(wxCommandEvent& event);
         void OnButtonClickProjectNew(wxCommandEvent& event);

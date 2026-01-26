@@ -29,6 +29,7 @@
 #include <wx/file.h>
 #include <wx/grid.h>
 #include <wx/stopwatch.h>
+#include <unordered_map>
 
 ///////////////////////////////////////////////////////////////////////////////
 /// Class ooObservations
@@ -42,7 +43,7 @@ public:
     wxGridSizesInfo GetColSizes() const;
     void SetColSizes(const wxGridSizesInfo &sizeInfo);
 
-    wxArrayString GetColFieldTypes() const;
+    const wxArrayString& GetColFieldTypes() const;
     void SetColFieldTypes(const wxArrayString &colFieldTypes);
 
     void SetPositionFix(time_t fixTime, double lat, double lon);
@@ -62,10 +63,15 @@ public:
     bool ReadFromXML(wxString& filename);
 
     static wxArrayString GetObservationFieldTypes();
+    static void AddListing(const wxString& listing, const wxArrayString& items);
+    static bool GetListing(const wxString& listing, wxArrayString* items);
+    static bool ReadListingFromXML(const wxString& filename, wxArrayString* result);
+
 
 private:
     wxGridSizesInfo m_col_sizes;
     wxArrayString m_col_field_types;
+    static std::unordered_map<wxString, wxArrayString> m_listings;
 
     time_t m_position_fix_time;
     double m_position_fix_lat;
