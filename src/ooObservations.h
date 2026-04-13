@@ -163,7 +163,7 @@ public:
                             ooProject& project,
                             wxXmlDocument& xmlDoc, wxXmlNode*& root,
                             const ooProject& defaultProject);
-    static void SetIcons(const wxString& listing, const wxArrayString& icons);
+    static void AddIcons(const wxString& listing, const wxArrayString& icons);
     static void SetNMEAFields(const std::vector<NMEAField>& fields);
     static const std::vector<NMEAField>& GetNMEAFields();
 
@@ -175,8 +175,7 @@ public:
 private:
     ooProject m_project;
     static std::unordered_map<wxString, wxArrayString> m_listings;
-    static wxArrayString m_icons;
-    static wxString m_iconsListing;
+    static std::unordered_map<wxString, wxArrayString> m_listingsIcons;
     static std::vector<NMEAField> m_nmeaFields;
 
     time_t m_position_fix_time;
