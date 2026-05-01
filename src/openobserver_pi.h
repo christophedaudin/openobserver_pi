@@ -190,6 +190,7 @@ public:
 
     void ToggleToolbarIcon();
     void ToggleWindow();
+    bool IsLateInitDone() const;
 
     ooObservations *m_ooObservations;
 

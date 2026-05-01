@@ -90,13 +90,14 @@ ooControlDialogImpl::ooControlDialogImpl(wxWindow* parent)
     RefreshListings();
     OnProjectGridSelectionChange();
 
-    m_listMarkIcons->Append(GetIconNameArray());
     m_currentObservationsIndex = 0;
 
     // bind backup timer (started in RestoreBackupObservations)
     m_BackupTimer.Bind(wxEVT_TIMER, &ooControlDialogImpl::OnBackupTimer, this, m_BackupTimer.GetId());
     // start timer to backup observations every 30 seconds
     m_BackupTimer.Start(30000);  // 30'000 ms = 30 s
+
+    this->Connect(wxEVT_SHOW, wxShowEventHandler(ooControlDialogImpl::OnShow), NULL, this);
 }
 
 ooControlDialogImpl::~ooControlDialogImpl()
@@ -116,12 +117,26 @@ ooControlDialogImpl::~ooControlDialogImpl()
                                NULL, this);
     }
     this->Disconnect(wxEVT_SHOW, wxShowEventHandler(ooMiniPanel::OnShow), NULL, m_MiniPanel);
+    this->Disconnect(wxEVT_SHOW, wxShowEventHandler(ooControlDialogImpl::OnShow), NULL, this);
 
     m_BackupTimer.Stop();
 
     if (!m_Observations) return;
 
     SaveObservations(GetBackupFilename(m_currentObservationsIndex));
+}
+
+void ooControlDialogImpl::OnShow(wxShowEvent& event)
+{
+    // !!! Work-around !!!
+    // Since OpenCPN 5.14.0, calling GetIconNameArray() during plugin initialization crashes
+    // so we'll do it here as a "post-initialization" step.
+    if (m_Observations != NULL) {
+        m_listMarkIcons->Set(GetIconNameArray());
+        m_listMarkIcons->SetSelection(m_listMarkIcons->FindString(
+            m_Observations->GetProject().GetMarkIcon())
+        );
+    }
 }
 
 void ooControlDialogImpl::NewProject()

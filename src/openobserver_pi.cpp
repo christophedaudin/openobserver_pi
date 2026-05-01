@@ -531,6 +531,11 @@ void openobserver_pi::ToggleWindow()
     }
 }
 
+bool openobserver_pi::IsLateInitDone() const
+{
+    return m_bReadyForRequests;
+}
+
 void openobserver_pi::SaveConfig()
 {
     #ifndef __WXMSW__
